@@ -205,27 +205,15 @@ def _fill_pool(pool: list[dict], target: int = MIN_POOL_SIZE) -> list[dict]:
 
 
 def init_odd_pool():
-    """
-    À appeler UNE FOIS au démarrage de l'application.
-    1. Génère/charge le pool d'urgence (odd_one_out_emergency.json)
-    2. Génère/charge le pool principal (odd_one_out_cache.json)
-    Les deux fichiers sont 100 % dynamiques — aucune donnée hardcodée.
-    """
     global _ODD_POOL
-
-    # ── Pool d'urgence (généré une seule fois, persiste sur disque) ──
-    _ensure_emergency_pool()
-
-    # ── Pool principal ───────────────────────────────────────────────
-    pool = _load_cache()
-    if len(pool) < MIN_POOL_SIZE:
-        print(f"[CAPTCHA] Pool insuffisant ({len(pool)} items), génération en cours…")
-        pool = _fill_pool(pool, target=MIN_POOL_SIZE)
-        _save_cache(pool)
-    else:
-        print(f"[CAPTCHA] Pool chargé depuis cache : {len(pool)} questions")
-    with _ODD_POOL_LOCK:
-        _ODD_POOL = pool
+    # Désactivé temporairement — API credits épuisés
+    # _ensure_emergency_pool()
+    # pool = _load_cache()
+    # if len(pool) < MIN_POOL_SIZE:
+    #     pool = _fill_pool(pool, target=MIN_POOL_SIZE)
+    #     _save_cache(pool)
+    print("[CAPTCHA] Mode dégradé — odd-one-out désactivé (crédits API insuffisants)")
+    _ODD_POOL = []
 
 
 def _refresh_pool_background():
@@ -257,9 +245,7 @@ def start_background_refresh():
     print("[CAPTCHA] Thread de refresh démarré")
 
 
-# ═══════════════════════════════════════════════════════════
-#  1. CAPTCHA Mathématique
-# ═══════════════════════════════════════════════════════════
+
 
 def generate_math_captcha() -> dict:
     _cleanup_expired()
@@ -326,9 +312,7 @@ def generate_image_captcha() -> dict:
     }
 
 
-# ═══════════════════════════════════════════════════════════
-#  3. CAPTCHA Ordre croissant
-# ═══════════════════════════════════════════════════════════
+
 
 def generate_order_captcha() -> dict:
     _cleanup_expired()
@@ -345,9 +329,7 @@ def generate_order_captcha() -> dict:
     }
 
 
-# ═══════════════════════════════════════════════════════════
-#  4. CAPTCHA Texte déformé
-# ═══════════════════════════════════════════════════════════
+
 
 def _wave_distort(img: Image.Image, amplitude: int = 4, frequency: float = 0.06) -> Image.Image:
     width, height = img.size
@@ -423,12 +405,6 @@ def generate_text_captcha() -> dict:
     }
 
 
-# ═══════════════════════════════════════════════════════════
-#  5. CAPTCHA Odd-one-out  —  pioche dans le pool IA
-# ═══════════════════════════════════════════════════════════
-
-# Aucun fallback statique — tout est généré par Claude
-
 
 def generate_odd_one_out_captcha() -> dict:
     _cleanup_expired()
@@ -486,22 +462,16 @@ def _async_refill():
         print(f"[CAPTCHA] Refill asynchrone échoué : {e}")
 
 
-# ═══════════════════════════════════════════════════════════
-#  Entrée publique
-# ═══════════════════════════════════════════════════════════
-
 def generate_captcha() -> dict:
     choice = random.random()
-    if choice < 0.20:
+    if choice < 0.25:
         return generate_math_captcha()
-    elif choice < 0.40:
+    elif choice < 0.50:
         return generate_image_captcha()
-    elif choice < 0.60:
+    elif choice < 0.75:
         return generate_order_captcha()
-    elif choice < 0.80:
-        return generate_text_captcha()
     else:
-        return generate_odd_one_out_captcha()
+        return generate_text_captcha()
 
 
 def verify_captcha(token: str, answer: str) -> bool:

@@ -20,8 +20,8 @@ from captcha_service import (
 async def lifespan(app: FastAPI):
     # ── Startup ──────────────────────────────────────────
     print("[APP] Initialisation du pool CAPTCHA odd-one-out…")
-    init_odd_pool()            # charge/génère le pool JSON au démarrage
-    start_background_refresh() # thread daemon de renouvellement automatique
+    init_odd_pool()            
+    start_background_refresh()
     print("[APP] Prêt.")
     yield
     # ── Shutdown ─────────────────────────────────────────
